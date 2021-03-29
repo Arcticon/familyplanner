@@ -74,7 +74,7 @@
                 :to="{ name: 'Home' }"
                 class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-700"
               >
-                Dashboard
+                Startseite
               </RouterLink>
               <RouterLink
                 active-class="bg-gray-900 text-white"
@@ -82,7 +82,23 @@
                 ex
                 class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-700"
               >
-                ShoppingList
+                Einkaufsliste
+              </RouterLink>
+              <RouterLink
+                active-class="bg-gray-900 text-white"
+                :to="{ name: 'DefaultCalendar' }"
+                ex
+                class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-700"
+              >
+                Kalendar
+              </RouterLink>
+              <RouterLink
+                active-class="bg-gray-900 text-white"
+                :to="{ name: 'DefaultMessages' }"
+                ex
+                class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-700"
+              >
+                Nachrichten
               </RouterLink>
             </div>
           </div>

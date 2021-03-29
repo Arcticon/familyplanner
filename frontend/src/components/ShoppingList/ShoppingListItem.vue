@@ -1,25 +1,21 @@
 <template>
-  <div class="grid grid-rows-2 h-28 rounded-md bg-gray-800">
-    <div class="flex justify-center">
+  <div class="flex flex-col h-32 rounded-md bg-gray-800 space-y-2">
+    <div class="flex flex-shrink justify-center mt-1">
       <img
         src="https://web.getbring.com/assets/images/items/konfituere.png"
         alt=""
+        class="h-14"
       />
     </div>
-    <div class="mt-2 flex overflow-hidden flex-col text-center">
-      <!-- <div class=""> -->
-      <!-- <p
-        class="text-white flex overflow-ellipsis overflow-hidden break-words leading-4 line-clamp-2"
-      > -->
-      <p
-        class="text-white leading-4 overflow-hidden overflow-ellipsis break-words line-clamp-1"
+    <div class="flex h-14 items-end justify-center m-1">
+      <span
+        class="text-white text-sm leading-4 overflow-hidden overflow-ellipsis break-words line-clamp-2"
       >
         {{ name }}
-      </p>
-      <!-- </div> -->
-      <!-- <div class=""> -->
-      <span class="text-gray-400">{{ description }}</span>
-      <!-- </div> -->
+      </span>
+    </div>
+    <div class="flex h-8 overflow-hidden flex-col text-center">
+      <span class="text-gray-400 text-xs">{{ description }}</span>
     </div>
   </div>
 </template>

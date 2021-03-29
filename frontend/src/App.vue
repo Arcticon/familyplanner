@@ -1,8 +1,8 @@
 <template>
-  <div class="flex flex-col h-screen bg-gray-100">
+  <div class="flex flex-col bg-gray-50 h-full">
     <Navbar />
     <RouterView v-slot="{ Component }">
-      <component :is="Component" />
+      <component :is="Component" class="mt-5 h-full" />
     </RouterView>
   </div>
 </template>

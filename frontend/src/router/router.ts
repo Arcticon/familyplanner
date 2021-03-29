@@ -21,6 +21,30 @@ const routes: Array<RouteRecordRaw> = [
       },
     ],
   },
+  {
+    path: "/calendar/",
+    name: "DefaultCalendar",
+    component: ShoppingList,
+    children: [
+      {
+        path: "/calendar/:id",
+        name: "Calendar",
+        component: ShoppingList,
+      },
+    ],
+  },
+  {
+    path: "/messages/",
+    name: "DefaultMessages",
+    component: ShoppingList,
+    children: [
+      {
+        path: "/messages/:id",
+        name: "Messages",
+        component: ShoppingList,
+      },
+    ],
+  },
 ];
 
 const router = createRouter({
