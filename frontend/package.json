@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "deploy": "ansible-playbook -i ansible/inventory/inventory.yml ansible/playbook.yml -t familyplanner -l arcticon -K"
   },
   "dependencies": {
     "@tailwindcss/line-clamp": "^0.2.0",

@@ -6,8 +6,9 @@
     dest: "{{ wwwPath }}/familyplanner"
 
 - name: "Build app"
-  shell: "npm run build"
-  chdir: "{{ wwwPath }}/familyplanner/frontend/"
+  shell: 
+    cmd: "npm run build"
+    chdir: "{{ wwwPath }}/familyplanner/frontend/"
 
 # - name: "Copy dist"
 #   copy:
