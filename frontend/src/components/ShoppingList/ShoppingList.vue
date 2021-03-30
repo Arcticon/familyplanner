@@ -72,7 +72,7 @@ export default defineComponent({
   name: "ShoppingList",
   setup() {
     console.log("in setup");
-    const list = {
+    const list:Object = {
       a: [
         {
           name: "Test1abcdefghijklmnopqrstuvwxyz",
@@ -150,13 +150,13 @@ export default defineComponent({
     ShoppingListItem,
   },
   methods: {
-    removeShoppingListItem(index: number) {
+    removeShoppingListItem(index: number | string) {
       this.shoppingList.splice(index, 1);
     },
-    filterList(index: String | Number) {
-      return this.list[index];
+    filterList(index: string) {
+      return (<any>this.list)[index];
     },
-    isActive(id: String | Number) {
+    isActive(id: string | number) {
       return {
         "bg-gray-900": this.id === id,
         "text-white": this.id === id,
@@ -175,7 +175,7 @@ export default defineComponent({
     },
   },
   computed: {
-    getAmountOfItemsInShoppingList(index: String | Number) {
+    getAmountOfItemsInShoppingList(index: string | number) {
       // console.log(this.filterList(index));
       // return this.list[index].length;
       return 6;
