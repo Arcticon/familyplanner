@@ -1,7 +1,10 @@
 <template>
-  <div class="flex">
+  <div class="flex overflow-x-hidden">
     <div class="flex w-1/4 justify-end mt-10 mr-7">
-      <div class="space-y-2 m-2">
+      <div
+        class="flex flex-col space-y-2 m-2 bg-gray-200 overflow-y-auto overflow-x-hidden min-h-1/2 max-h-3/4 fixed"
+        style="height: calc(100% - 80px)"
+      >
         <div
           class="flex hover:bg-gray-700 justify-between p-3 hover:text-white cursor-pointer w-60"
           :class="isActive('a')"
@@ -31,13 +34,16 @@
     <div class="flex w-2/4 bg-gray-200">
       <div class="flex flex-col space-y-3 w-full">
         <div
-          class="flex w-full h-24"
+          class="flex flex-shrink-0 w-full h-24 items-center"
           style="
-            background-image: url('https://web.getbring.com/assets/images/themes/home_create_list.png');
-            background-position-y: 100%;
-            background-size: 135%;
+            background-image: url('https://cdn.shopify.com/s/files/1/2645/4560/articles/Juli_Wallpaper_saisonal_und_regional_essen_1000x.jpg');
+            background-position-y: 10%;
+            background-position-x: 150%;
+            background-size: 80%;
           "
-        ></div>
+        >
+          <span class="text-black ml-32 text-2xl">NameOfList</span>
+        </div>
         <div class="flex flex-col m-2 space-y-3">
           <div class="flex w-full">
             <input
@@ -59,6 +65,11 @@
               ></ShoppingListItem>
             </transition-group>
           </div>
+          <ShoppingListLastUsed
+            class="fadeOut"
+            v-on:addLastUsedItemToShoppingList="addLastUsedItemToShoppingList"
+            :newItem="itemToAdd"
+          ></ShoppingListLastUsed>
         </div>
       </div>
     </div>
@@ -70,6 +81,7 @@ import router from "../../router/router";
 import { defineComponent } from "vue";
 import { useRoute } from "vue-router";
 import ShoppingListItem from "./ShoppingListItem.vue";
+import ShoppingListLastUsed from "./ShoppingListLastUsed.vue";
 export default defineComponent({
   name: "ShoppingList",
   setup() {
@@ -173,13 +185,17 @@ export default defineComponent({
       list: this.list,
       shoppingList: this.filterList(this.id),
       shoppingListItemToPush: "",
+      itemToAdd: undefined,
     };
   },
   components: {
     ShoppingListItem,
+    ShoppingListLastUsed,
   },
   methods: {
     removeShoppingListItem(index: number | string) {
+      console.log("removeShoppingListItem");
+      this.itemToAdd = Object.assign(this.shoppingList[index]);
       this.shoppingList.splice(index, 1);
     },
     filterList(index: string) {
@@ -218,6 +234,11 @@ export default defineComponent({
     getAmountOfItemsInShoppingList(index: string | number) {
       // console.log(this.filterList(index));
       return this.list[index].length;
+    },
+    addLastUsedItemToShoppingList(item: { name: string; description: string }) {
+      console.log("parent: addLastUsedItemToShoppingList", { item });
+      this.shoppingList.push(item);
+      this.itemToAdd = undefined;
     },
   },
   watch: {
