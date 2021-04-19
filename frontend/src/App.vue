@@ -2,7 +2,9 @@
   <div class="flex flex-col bg-gray-50 h-full w-full">
     <Navbar />
     <RouterView v-slot="{ Component }">
-      <component :is="Component" />
+      <Suspense>
+        <component :is="Component" />
+      </Suspense>
     </RouterView>
   </div>
 </template>
@@ -25,6 +27,7 @@ export default defineComponent({
       // document.title = to.meta.title || "Vue-Port Shop";
     });
     onErrorCaptured((err) => {
+      console.error("onErrorCaptured: ", err);
       error.value = err as string;
     });
     return {

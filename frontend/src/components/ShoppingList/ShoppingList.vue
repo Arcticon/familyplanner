@@ -6,27 +6,18 @@
         style="height: calc(100% - 80px)"
       >
         <div
+          v-for="list in shoppingLists"
+          :name="list.name"
+          :key="list._id"
           class="flex hover:bg-gray-700 justify-between p-3 hover:text-white cursor-pointer w-60"
-          :class="isActive('a')"
-          @click="navigateTo('a')"
+          :class="isListActive(list._id)"
+          @click="navigateToShoppingList(list)"
         >
           <div class="flex">
-            <span>NameOfList1</span>
+            <span>{{ list.name }}</span>
           </div>
           <div class="flex bg-red-600 w-6 h-6 justify-center">
-            {{ getAmountOfItemsInShoppingList("a") }}
-          </div>
-        </div>
-        <div
-          class="flex hover:bg-gray-700 justify-between p-3 hover:text-white cursor-pointer w-60"
-          :class="isActive('b')"
-          @click="navigateTo('b')"
-        >
-          <div class="flex">
-            <span>NameOfList2</span>
-          </div>
-          <div class="flex w-6 h-6 justify-center">
-            {{ getAmountOfItemsInShoppingList("b") }}
+            {{ getAmountOfItemsInShoppingList(list._id) }}
           </div>
         </div>
       </div>
@@ -42,7 +33,9 @@
             background-size: 80%;
           "
         >
-          <span class="text-black ml-32 text-2xl">NameOfList</span>
+          <span class="text-black ml-32 text-2xl">{{
+            selectedShoppingList.name
+          }}</span>
         </div>
         <div class="flex flex-col m-2 space-y-3">
           <div class="flex w-full">
@@ -56,7 +49,7 @@
           <div class="flex flex-row flex-wrap gap-1">
             <transition-group name="fadeOut">
               <ShoppingListItem
-                v-for="(shoppingListItem, index) in shoppingList"
+                v-for="(shoppingListItem, index) in selectedShoppingList.items"
                 :name="shoppingListItem.name"
                 :description="shoppingListItem.description"
                 :key="shoppingListItem.name"
@@ -65,11 +58,23 @@
               ></ShoppingListItem>
             </transition-group>
           </div>
-          <ShoppingListLastUsed
-            class="fadeOut"
-            v-on:addLastUsedItemToShoppingList="addLastUsedItemToShoppingList"
-            :newItem="itemToAdd"
-          ></ShoppingListLastUsed>
+          <div class="flex bg-white h-10 items-center">
+            <span class="ml-3">Zuletzt verwendet</span>
+          </div>
+          <div class="flex flex-row flex-wrap gap-1">
+            <transition-group name="fadeOut">
+              <ShoppingListItem
+                v-for="(
+                  shoppingListItem, index
+                ) in selectedShoppingList.lastUsedItems"
+                :name="shoppingListItem.name"
+                :description="shoppingListItem.description"
+                :key="shoppingListItem.name"
+                @click="removeShoppingListLastUsedItem(index)"
+                class="fadeOut shadow-md w-28"
+              ></ShoppingListItem>
+            </transition-group>
+          </div>
         </div>
       </div>
     </div>
@@ -77,138 +82,80 @@
 </template>
 
 <script lang="ts">
-import router from "../../router/router";
-import { defineComponent } from "vue";
-import { useRoute } from "vue-router";
+interface ShoppingList extends Object {
+  _id: string;
+  name: string;
+  items: [ShoppingListItem];
+  lastUsedItems: [ShoppingListItem];
+  userId: string;
+}
+
+interface ShoppingListItem extends Object {
+  name: string;
+  description: string;
+}
+
+import { defineComponent, onMounted, reactive, toRefs } from "vue";
+import { useApi } from "../../modules/api";
 import ShoppingListItem from "./ShoppingListItem.vue";
-import ShoppingListLastUsed from "./ShoppingListLastUsed.vue";
 export default defineComponent({
   name: "ShoppingList",
   setup() {
-    console.log("in setup");
-    const list: {
-      [index: string]: Array<{ name: string; description: string }>;
-    } = {
-      a: [
-        {
-          name: "Test1abcdefghijklmnopqrstuvwxyz",
-          description: "",
-        },
-        {
-          name: "Test2",
-          description: "Qux",
-        },
-        {
-          name: "Test3",
-          description: "Qux",
-        },
-        {
-          name: "Test4",
-          description: "Qux",
-        },
-        {
-          name: "Test5",
-          description: "Qux",
-        },
-        {
-          name: "Test6",
-          description: "Qux",
-        },
-        {
-          name: "Test7",
-          description: "Qux",
-        },
-        {
-          name: "Test8",
-          description: "Qux",
-        },
-        {
-          name: "Test8",
-          description: "Qux",
-        },
-        {
-          name: "Test8",
-          description: "Qux",
-        },
-        {
-          name: "Test8",
-          description: "Qux",
-        },
-        {
-          name: "Test8",
-          description: "Qux",
-        },
-        {
-          name: "Test8",
-          description: "Qux",
-        },
-      ],
-      b: [
-        {
-          name: "1",
-          description: "",
-        },
-        {
-          name: "2",
-          description: "Phyllis",
-        },
-        {
-          name: "3",
-          description: "Phyllis",
-        },
-        {
-          name: "4",
-          description: "Phyllis",
-        },
-        {
-          name: "5",
-          description: "Phyllis",
-        },
-        {
-          name: "6",
-          description: "Phyllis",
-        },
-      ],
-    };
+    const { get } = useApi("shoppingList");
 
-    const { params } = useRoute();
-    // console.log(params);
-
-    return {
-      list: list,
-      id: params.id || "a",
-    };
-  },
-  data() {
-    console.log("data");
-    return {
-      list: this.list,
-      shoppingList: this.filterList(this.id),
+    const state = reactive({
+      shoppingLists: [] as ShoppingList[],
+      selectedShoppingList: {} as ShoppingList,
       shoppingListItemToPush: "",
-      itemToAdd: undefined,
+    });
+
+    function getPreselectedShoppingList() {
+      const id = localStorage.getItem(
+        "fp.shoppingList.lastSelectedShoppingListId"
+      );
+      return (
+        state.shoppingLists.find((list: any) => list._id === id) ||
+        state.shoppingLists[0]
+      );
+    }
+
+    onMounted(async function onMounted() {
+      const { data: shoppingLists } = await get();
+      console.log({ shoppingLists });
+      state.shoppingLists = shoppingLists;
+
+      const preselectedShoppingList = getPreselectedShoppingList();
+      state.selectedShoppingList = preselectedShoppingList;
+      console.log(state.selectedShoppingList);
+    });
+
+    return {
+      ...toRefs(state),
     };
   },
   components: {
     ShoppingListItem,
-    ShoppingListLastUsed,
   },
   methods: {
-    removeShoppingListItem(index: number | string) {
+    removeShoppingListItem(index: number) {
       console.log("removeShoppingListItem");
-      this.itemToAdd = Object.assign(this.shoppingList[index]);
-      this.shoppingList.splice(index, 1);
+      this.selectedShoppingList.lastUsedItems.push(
+        this.selectedShoppingList.items[index]
+      );
+      this.selectedShoppingList.items.splice(index, 1);
     },
-    filterList(index: string) {
-      return (<any>this.list)[index];
-    },
-    isActive(id: string | number) {
+    isListActive(id: string) {
       return {
-        "bg-gray-900": this.id === id,
-        "text-white": this.id === id,
+        "bg-gray-900": this.selectedShoppingList._id === id,
+        "text-white": this.selectedShoppingList._id === id,
       };
     },
-    navigateTo(id: string) {
-      router.push({ name: "ShoppingList", params: { id: id } });
+    navigateToShoppingList(list: any) {
+      this.selectedShoppingList = list;
+      localStorage.setItem(
+        "fp.shoppingList.lastSelectedShoppingListId",
+        list._id
+      );
     },
     add($event: KeyboardEvent) {
       console.log(this);
@@ -219,34 +166,30 @@ export default defineComponent({
         splitInput[1].length
       ) {
         this.shoppingListItemToPush = "";
-        this.shoppingList.push({
+        this.selectedShoppingList.items.push({
           name: splitInput[1],
           description: splitInput[0],
         });
       } else if (splitInput.length === 1 && splitInput[0].length) {
         this.shoppingListItemToPush = "";
-        this.shoppingList.push({
+        this.selectedShoppingList.items.push({
           name: splitInput[0],
           description: "",
         });
       }
     },
-    getAmountOfItemsInShoppingList(index: string | number) {
-      // console.log(this.filterList(index));
-      return this.list[index].length;
+    getAmountOfItemsInShoppingList(id: string) {
+      if (this.selectedShoppingList._id === id) {
+        return this.selectedShoppingList.items.length;
+      } else {
+        return (this.shoppingLists.find((list) => list._id === id) || {}).items
+          ?.length;
+      }
     },
-    addLastUsedItemToShoppingList(item: { name: string; description: string }) {
-      console.log("parent: addLastUsedItemToShoppingList", { item });
-      this.shoppingList.push(item);
-      this.itemToAdd = undefined;
-    },
-  },
-  watch: {
-    $route(to, from) {
-      // console.log("from:", from);
-      // console.log("to:", to);
-      this.id = to.params.id;
-      this.shoppingList = this.filterList(to.params.id);
+    removeShoppingListLastUsedItem(index: number) {
+      const item = this.selectedShoppingList.lastUsedItems[index];
+      this.selectedShoppingList.lastUsedItems.splice(index, 1);
+      this.selectedShoppingList.items.push(item);
     },
   },
 });
