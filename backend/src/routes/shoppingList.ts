@@ -25,9 +25,11 @@ router.get("/", async function (req, res) {
 });
 
 router.post("/", function (req, res) {
+  const user = <DocumentType<User>>req.user;
+
   const list = new shoppingListModel({
     ...req.body,
-    userId: req.user?._id,
+    userId: user._id,
   });
   res.json(list.toJSON());
 });
