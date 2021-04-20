@@ -13,8 +13,7 @@ export const useApi = (endpoint: string) => {
   const router = useRouter();
   axios.defaults.withCredentials = true;
   const api = axios.create({
-    baseURL: "http://localhost:4000/api/",
-    // baseURL: "http://192.168.178.77:4000/api/",
+    baseURL: `${import.meta.env.VITE_API_ENDPOINT}`,
     headers: {},
     timeout: 2000,
     withCredentials: true,
