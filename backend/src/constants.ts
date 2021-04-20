@@ -3,7 +3,7 @@ import argon2 from "argon2";
 const __prod__ = process.env.NODE_ENV === "production";
 const __port__ = process.env.PORT || 4000;
 const __mongodbhost__ = "localhost";
-const __mongodbport__ = 27019;
+const __mongodbport__ = 27017;
 const __mongodbdatabasename__ = "familyplanner";
 const MONGODB_URI = `mongodb://${__mongodbhost__}:${__mongodbport__}/${__mongodbdatabasename__}`;
 
