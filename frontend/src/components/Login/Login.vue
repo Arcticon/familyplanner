@@ -122,7 +122,6 @@ export default defineComponent({
     });
     function doLogin() {
       post(payload).then(() => {
-        console.log(data);
         setUser(data.value, payload.rememberMe);
         router.push({ name: "Home" });
       });

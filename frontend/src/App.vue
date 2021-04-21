@@ -2,9 +2,7 @@
   <div class="flex flex-col bg-gray-50 h-full w-full">
     <Navbar />
     <RouterView v-slot="{ Component }">
-      <Suspense>
-        <component :is="Component" />
-      </Suspense>
+      <component :is="Component" />
     </RouterView>
   </div>
 </template>

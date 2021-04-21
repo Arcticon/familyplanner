@@ -4,8 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "serve": "vite preview",
-    "deploy": "ansible-playbook -i ansible/inventory/inventory.yml ansible/playbook.yml -t familyplanner -l arcticon -K"
+    "serve": "vite preview"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.3.2",

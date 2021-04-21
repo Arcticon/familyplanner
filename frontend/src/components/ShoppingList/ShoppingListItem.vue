@@ -31,7 +31,6 @@ export default defineComponent({
     },
     description: {
       type: String,
-      required: false,
       default: "",
     },
   },

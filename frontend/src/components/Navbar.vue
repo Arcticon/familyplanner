@@ -79,7 +79,7 @@
               <RouterLink
                 active-class="bg-gray-900 text-white"
                 :to="{ name: 'DefaultShoppingList' }"
-                ex
+                v-if="loggedIn"
                 class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-700"
               >
                 Einkaufsliste
@@ -87,7 +87,7 @@
               <RouterLink
                 active-class="bg-gray-900 text-white"
                 :to="{ name: 'DefaultCalendar' }"
-                ex
+                v-if="loggedIn"
                 class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-700"
               >
                 Kalendar
@@ -95,7 +95,7 @@
               <RouterLink
                 active-class="bg-gray-900 text-white"
                 :to="{ name: 'DefaultMessages' }"
-                ex
+                v-if="loggedIn"
                 class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-gray-700"
               >
                 Nachrichten
@@ -188,7 +188,7 @@
               </div>
             </div>
           </div>
-          <div v-if="!loggedIn" class="flex text-gray-300">
+          <div v-if="!loggedIn" class="flex space-x-4 text-gray-300">
             <RouterLink
               active-class="bg-gray-900 text-white"
               :to="{ name: 'Login' }"
@@ -247,13 +247,8 @@ export default defineComponent({
   setup: () => {
     const { user } = useAuth();
     let loggedIn = ref(!!user.value);
-    console.log({ user });
     watch(user, (newUserValue: any) => {
-      console.log("user changed: ", newUserValue);
       loggedIn.value = !!newUserValue;
-    });
-    watch(loggedIn, (newLoggedInValue: any) => {
-      console.log("loggedIn changed: ", newLoggedInValue);
     });
 
     const isOpen = ref(false);

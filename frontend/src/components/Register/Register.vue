@@ -128,7 +128,6 @@ export default defineComponent({
     });
     function doRegister() {
       post(payload).then(() => {
-        console.log(data);
         setUser(data.value, payload.rememberMe);
         router.push({ name: "Home" });
       });

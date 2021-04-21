@@ -158,7 +158,6 @@ export default defineComponent({
       );
     },
     add($event: KeyboardEvent) {
-      console.log(this);
       const splitInput = this.shoppingListItemToPush?.split(" ") || [];
       if (
         splitInput.length > 1 &&
