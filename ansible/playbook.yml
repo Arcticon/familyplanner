@@ -1,0 +1,22 @@
+---
+- hosts: [all]
+  gather_facts: yes
+  pre_tasks:
+    # - name: "Update Ubuntu derivatives"
+    #   tags: always
+    #   apt:
+    #     upgrade: dist
+    #     update_cache: true
+    #   when: ansible_pkg_mgr == "apt"
+    #   become: true
+    - name: Clone repo
+      tags: always
+      ansible.builtin.git:
+        repo: git@github.com:Arcticon/familyplanner.git
+        dest: "{{ wwwPath }}/app"
+
+  roles:
+    - { role: frontend, tags: ["frontend"] }
+    - { role: backend, tags: ["backend"] }
+  vars:
+    wwwPath: "/var/www/html/arcticon.de/dev/familyplanner"

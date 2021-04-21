@@ -1,0 +1,13 @@
+---
+# tasks file for familyplanner
+- name: "Install node_modules"
+  npm:
+    path: "{{ wwwPath }}/app/backend/"
+    executable: "/var/www/html/arcticon.de/dev/familyplanner/.nvm/versions/node/v12.22.1/bin/npm"
+    ci: yes
+    production: yes
+
+- name: "Build app"
+  shell:
+    cmd: "npm run build"
+    chdir: "{{ wwwPath }}/app/backend/"

@@ -1,0 +1,22 @@
+[Unit]
+Description=Backend Service for Familyplanner
+After=syslog.target
+
+[Service]
+Type=simple
+User=familyplanner
+Group=familyplanner
+WorkingDirectory=/var/www/html/arcticon.de/dev/familyplanner/app/backend/dist/
+Environment="NVM_DIR=/var/www/html/arcticon.de/dev/familyplanner//.nvm"
+ExecStart=/var/www/html/arcticon.de/dev/familyplanner//.nvm/versions/node/v12.22.1/bin/node server.js > /var/log/familyplanner/backend.log 2>&1
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=familyplanner
+UMask=0027
+PIDFile=/var/run/familyplanner/familyplanner.pid
+LimitNOFILE=16000
+LimitNPROC=16000
+
+[Install]
+WantedBy=multi-user.target
