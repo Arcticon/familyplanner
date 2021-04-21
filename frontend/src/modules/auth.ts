@@ -38,18 +38,14 @@ export function useAuth() {
   async function logout() {
     const { data, post } = useApi("logout");
 
-    const [err, logOutSuccessfull] = await formatPromise(post());
+    const [err] = await formatPromise(post());
 
     if (err) {
       console.error({ err });
       state.error = err;
       throw err;
     }
-    if (logOutSuccessfull) {
-      console.log({ logOutSuccessfull });
-      state.user = undefined;
-    }
-    console.log({ data });
+    state.user = undefined;
     window.localStorage.removeItem(localStorageLookupTable.get("user") || "");
     return;
   }
