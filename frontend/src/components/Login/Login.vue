@@ -39,6 +39,7 @@
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="Email address"
               v-model="email"
+              v-focus=""
             />
           </div>
           <div>
@@ -109,16 +110,13 @@ import { useRouter } from "vue-router";
 export default defineComponent({
   name: "Login",
   setup: () => {
-    const email: string = "";
-    const password: string = "";
-    const rememberMe: boolean = true;
     const { loading, data, post, errorMessage } = useApi("login");
     const { setUser } = useAuth();
     const router = useRouter();
     const payload = reactive({
-      email: email,
-      password: password,
-      rememberMe: rememberMe,
+      email: "",
+      password: "",
+      rememberMe: true,
     });
     function doLogin() {
       post(payload).then(() => {
@@ -132,6 +130,13 @@ export default defineComponent({
       errorMessage,
       ...toRefs(payload),
     };
+  },
+  directives: {
+    focus: {
+      mounted(el: any): void {
+        el.focus();
+      },
+    },
   },
 });
 </script>

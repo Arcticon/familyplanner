@@ -25,6 +25,10 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "ShoppingListItem",
   props: {
+    _id: {
+      type: String,
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -34,7 +38,7 @@ export default defineComponent({
       default: "",
     },
   },
-  setup: () => {},
+  setup() {},
 });
 </script>
 

@@ -17,22 +17,24 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "helmet": "^4.4.1",
+    "lodash": "^4.17.21",
     "mongoose": "^5.12.3",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "redis": "^3.1.0"
   },
   "devDependencies": {
+    "@typegoose/typegoose": "^7.6.0",
     "@types/bcrypt": "^3.0.1",
     "@types/connect-redis": "0.0.16",
     "@types/cors": "^2.8.10",
     "@types/express": "^4.17.11",
     "@types/express-session": "^1.17.3",
+    "@types/lodash": "^4.14.168",
     "@types/mongoose": "^5.10.4",
     "@types/node": "^14.14.25",
     "@types/passport": "^1.0.6",
     "@types/passport-local": "^1.0.33",
-    "@typegoose/typegoose": "^7.6.0",
     "ts-node-dev": "^1.1.6",
     "typescript": "^4.1.3"
   }

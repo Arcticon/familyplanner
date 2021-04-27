@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import cors, { CorsOptions } from "cors";
 import passport from "passport";
@@ -13,9 +13,12 @@ import argon2 from "argon2";
 import userModel from "./models/userModel";
 import { promisify } from "util";
 import { formatPromise } from "./util";
+import { setLogLevel, LogLevels } from "@typegoose/typegoose";
 const RedisStore = connectRedis(session);
 mongoose.Promise = global.Promise;
 mongoose.set("debug", !constants.__prod__);
+
+setLogLevel(LogLevels.DEBUG);
 
 //mongodb init
 
@@ -63,6 +66,11 @@ const app = express();
 if (app.get("env") === "production") {
   app.set("trust proxy", 1);
 }
+
+app.use(function (err: any, _: Request, res: Response, __: NextFunction) {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 
 const redisClient = redis.createClient();
 app.use(express.json());

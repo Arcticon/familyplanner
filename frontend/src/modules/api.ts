@@ -23,20 +23,17 @@ export const useApi = (endpoint: string) => {
   const loading = ref(false);
   const error = ref();
 
-  /**
-   *
-   * @param payload
-   * @returns
-   */
-  const post = (payload?: Record<string, any>) => {
+  const post = (payload?: Record<string, any>, override?: string) => {
     loading.value = true;
     error.value = undefined;
 
-    console.log("post: ", endpoint);
-    console.log("post: ", payload);
+    let fullEndpoint = endpoint;
+    if (override) {
+      fullEndpoint = `${fullEndpoint}/${override}`;
+    }
 
     return api
-      .post(endpoint, payload)
+      .post(fullEndpoint, payload)
       .then((res) => (data.value = res.data))
       .catch((e) => {
         error.value = e;
@@ -46,12 +43,6 @@ export const useApi = (endpoint: string) => {
       .finally(() => (loading.value = false));
   };
 
-  /**
-   *
-   * @param query
-   * @param config
-   * @returns
-   */
   async function get(query?: Record<string, any>, config?: AxiosRequestConfig) {
     loading.value = true;
     error.value = undefined;
@@ -70,7 +61,7 @@ export const useApi = (endpoint: string) => {
     }
 
     try {
-      const data = await api.get(endpoint + queryString);
+      const data = await api.get(`${endpoint}${queryString}`);
       loading.value = false;
       return data;
     } catch (error) {
@@ -80,13 +71,17 @@ export const useApi = (endpoint: string) => {
     }
   }
 
-  // @ts-ignore
-  const del = () => {
+  async function del(override?: string) {
     loading.value = true;
     error.value = undefined;
 
+    let fullEndpoint = endpoint;
+    if (override) {
+      fullEndpoint = `${fullEndpoint}/${override}`;
+    }
+
     return api
-      .delete(endpoint)
+      .delete(fullEndpoint)
       .then((res) => (data.value = res.data))
       .catch((e) => {
         error.value = e;
@@ -94,7 +89,7 @@ export const useApi = (endpoint: string) => {
         throw e;
       })
       .finally(() => (loading.value = false));
-  };
+  }
 
   const errorMessage = computed(() => {
     if (error.value) {
