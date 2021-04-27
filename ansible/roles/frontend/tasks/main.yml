@@ -12,7 +12,7 @@
     cmd: "npm run build"
     chdir: "{{ wwwPath }}/app/frontend/"
 
-- name: "Stop HAProxy service"
+- name: "Stop familyplanner service"
   service:
     name: familyplanner
     state: restarted

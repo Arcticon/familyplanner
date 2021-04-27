@@ -80,7 +80,7 @@ router.post(
       },
     };
 
-    let shoppingList = await shoppingListModel
+    await shoppingListModel
       .updateOne(
         {
           _id: id,
