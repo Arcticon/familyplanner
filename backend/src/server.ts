@@ -56,6 +56,7 @@ const corsOptions: CorsOptions = {
     "http://localhost:4000",
     "http://192.168.178.77:3000",
     "http://arcticon.de",
+    "http://dev.arcticon.de",
   ],
   // methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
   // allowedHeaders: ["Content-Type"],
