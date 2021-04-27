@@ -11,3 +11,10 @@
   shell:
     cmd: "npm run build"
     chdir: "{{ wwwPath }}/app/backend/"
+
+- name: "Restart familyplanner service"
+  service:
+    name: familyplanner
+    state: restarted
+    enabled: false
+  become: true
