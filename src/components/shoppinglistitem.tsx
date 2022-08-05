@@ -1,9 +1,11 @@
 import { PureComponent } from 'react';
+import Image from 'next/future/image';
 
 export type ShoppingListItemProps = {
     _id: string;
     name: string;
     description: string;
+    image: string;
 };
 
 class ShoppingListItem extends PureComponent<ShoppingListItemProps> {
@@ -11,7 +13,9 @@ class ShoppingListItem extends PureComponent<ShoppingListItemProps> {
         return (
             <div className="flex flex-col h-32 rounded-md bg-gray-800 space-y-2">
                 <div className="flex flex-shrink justify-center mt-1">
-                    <img src="https://web.getbring.com/assets/images/items/konfituere.png" alt="" className="h-14" />
+                    {/* <div className="h-14"> */}
+                    <Image src={this.props.image} alt="asdf" className="h-14" />
+                    {/* </div> */}
                 </div>
                 <div className="flex h-14 items-end justify-center m-1">
                     <span className="text-white text-sm leading-4 overflow-hidden overflow-ellipsis break-words line-clamp-2">

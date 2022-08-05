@@ -1,9 +1,10 @@
-import type { NextPage } from 'next';
+import type { GetServerSidePropsContext, NextPage } from 'next';
 import { faker } from '@faker-js/faker/locale/de';
 import ShoppingListItem, { ShoppingListItemProps } from '../../components/shoppinglistitem';
-import { useState, useEffect } from 'react';
+import { useState, useMemo, KeyboardEvent } from 'react';
 
-const MAX_ITEMS = 10;
+const MIN_ITEMS = 12;
+const MAX_ITEMS = 60;
 const MAX_LISTS = 5;
 
 type ShoppingListProps = {
@@ -12,11 +13,21 @@ type ShoppingListProps = {
     items: ShoppingListItemProps[];
 };
 
-const generateItem: () => ShoppingListItemProps = () => {
+const generateRandomItem: () => ShoppingListItemProps = () => {
     return {
         _id: faker.database.mongodbObjectId(),
         name: faker.commerce.product(),
-        description: faker.commerce.productAdjective()
+        description: faker.commerce.productAdjective(),
+        image: faker.image.dataUri(640, 480, faker.color.human())
+    };
+};
+
+const generateItem = (name: string, description?: string): ShoppingListItemProps => {
+    return {
+        _id: faker.database.mongodbObjectId(),
+        name,
+        description: description ?? '',
+        image: faker.image.dataUri(640, 480, faker.color.human())
     };
 };
 
@@ -24,55 +35,93 @@ const generateShoppingList: () => ShoppingListProps = () => {
     return {
         _id: faker.database.mongodbObjectId(),
         name: faker.company.companyName(),
-        items: Array.from({length: Math.floor(Math.random() * MAX_ITEMS)}, () => generateItem())
+        items: Array.from({ length: Math.floor(Math.random() * MAX_ITEMS + MIN_ITEMS) }, () => generateRandomItem())
     };
 };
 
 const generateShoppingLists: () => ShoppingListProps[] = () => {
-    return Array.from({length: Math.floor(Math.random() * MAX_LISTS)}, () => generateShoppingList())
+    return Array.from({ length: Math.floor(Math.random() * MAX_LISTS + 2) }, () => generateShoppingList());
 };
-// const shoppingLists = generateShoppingLists();
-// const selectedShoppingList = shoppingLists[0];
 
-// console.log(selectedShoppingList)
-
-const ShoppingList: NextPage = () => {
-
-    const [shoppingLists, setShoppingLists] = useState<ShoppingListProps[]>([]);
-    const [selectedShoppingList, setSelectedShoppingList] = useState<ShoppingListProps>();
-    useEffect(() => {
-        const lists = generateShoppingLists();
-        setShoppingLists(lists);
-        setSelectedShoppingList(lists[0]);
-    }, []);
-
-    function removeShoppingListItem(this: number, event: any) {
-        if (event.charCode !== 13) {
-            return;
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+    return {
+        props: {
+            shoppingLists: generateShoppingLists()
         }
-        selectedShoppingList?.items.splice(this, 1);
+    };
+}
+
+const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppingLists }) => {
+    const [currentShoppingLists, setShoppingLists] = useState<ShoppingListProps[]>(shoppingLists);
+    const [selectedShoppingListId, setSelectedShoppingListId] = useState<ShoppingListProps['_id']>();
+    const [isEditingName, setIsEditingName] = useState<boolean>(false);
+    const currentShoppingList = useMemo(() => {
+        return (
+            currentShoppingLists.find(shoppingList => shoppingList._id === selectedShoppingListId) ??
+            currentShoppingLists[0]
+        );
+    }, [selectedShoppingListId, currentShoppingLists]);
+
+    function updateShoppingLists() {
+        setShoppingLists(shoppingList => {
+            return shoppingList.map(list => {
+                if (list._id === currentShoppingList._id) {
+                    return currentShoppingList;
+                }
+                return list;
+            });
+        });
     }
 
-    function addShoppingListItem(this: number, event: any) {
-        if (event.charCode !== 13) {
+    function removeShoppingListItem(index: number) {
+        currentShoppingList.items.splice(index, 1);
+        updateShoppingLists();
+    }
+
+    function addShoppingListItem(event: KeyboardEvent<HTMLInputElement>) {
+        if (!event.code.endsWith('Enter')) {
             return;
         }
-        // selectedShoppingList.items.splice(this, 1);
+        const value = event.currentTarget.value.trim();
+        if (!value) {
+            return (event.currentTarget.value = '');
+        }
+        const [description, name] = value.split(' ');
+        const newItem = generateItem(name ?? description, name ? description : '');
+        console.log(newItem);
+        currentShoppingList.items.unshift(newItem);
+        updateShoppingLists();
+        event.currentTarget.value = '';
+    }
+
+    function changeName(event: KeyboardEvent<HTMLInputElement>) {
+        if (!event.code.endsWith('Enter')) {
+            return;
+        }
+        const value = event.currentTarget.value.trim();
+        if (!value) {
+            return (event.currentTarget.value = '');
+        }
+        currentShoppingList.name = value;
+        updateShoppingLists();
+        setIsEditingName(false);
     }
 
     return (
         <div className="flex overflow-x-hidden">
-            <div className="flex w-1/4 justify-end mt-10 mr-7">
-                <div
-                    className="flex bg-gray-200 overflow-y-auto overflow-x-hidden min-h-1/2 max-h-3/4 fixed"
-                    style={{ height: 'calc(100% - 80px)' }}
-                >
-                    <div className="flex flex-col space-y-2 m-2 w-60">
-                        {shoppingLists.map(shoppingList => (
-                            <div key={shoppingList._id}>
-                                <div className="flex">
-                                    <span>{shoppingList.name}</span>
-                                </div>
+            <div className="flex w-1/4 mt-10 mr-7 flex-none">
+                <div className="flex bg-gray-200 overflow-y-auto h-[20rem] flex-none">
+                    <div className="flex flex-col space-y-2 m-2 w-60 flex-none">
+                        {currentShoppingLists.map(shoppingList => (
+                            <div
+                                key={shoppingList._id}
+                                className="flex justify-between hover:cursor-pointer"
+                                onClick={() => {
+                                    setIsEditingName(false);
+                                    setSelectedShoppingListId(shoppingList._id);
+                                }}
+                            >
+                                <div className="flex">{shoppingList.name}</div>
                                 <div className="flex bg-red-600 w-6 h-6 justify-center rounded-sm">
                                     {shoppingList.items?.length ?? 0}
                                 </div>
@@ -81,37 +130,38 @@ const ShoppingList: NextPage = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex w-2/4 bg-gray-200">
-                <div className="flex flex-col space-y-3 w-full">
+            <div className="flex mt-3 w-[37rem] flex-shrink">
+                <div className="flex flex-col bg-gray-200 space-y-3  flex-shrink">
                     <div
                         className="flex flex-shrink-0 w-full h-24 items-center"
-                        //   style={{
-                        //     'background-image': "url('https://cdn.shopify.com/s/files/1/2645/4560/articles/Juli_Wallpaper_saisonal_und_regional_essen_1000x.jpg')",
-                        //     'background-position-y': '10%',
-                        //     'background-position-x': '150%',
-                        //     'background-size': '80%'
-                        //   }}
+                        style={{
+                            backgroundImage: 'url(bg.jpg)',
+                            backgroundPositionX: '150%',
+                            backgroundPositionY: '10%',
+                            backgroundSize: '80%'
+                        }}
                     >
-                        {/* <input
-            type="text"
-            v-if="addNewShoppingListInput2"
-            v-model="selectedShoppingList.name"
-            @blur.native="addNewShoppingListInput2 = false"
-            @keyup.enter="
-              addNewShoppingListInput2 = false;
-              changeShoppingListName();
-            "
-            v-focus=""
-            placeholder="Liste hinzuf&uuml;gen"
-            className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-          />
-          <p
-            v-else
-            @click="addNewShoppingListInput2 = true"
-            className="text-black ml-32 text-2xl"
-          >
-            {{ selectedShoppingList?.name }}
-          </p> */}
+                        {isEditingName ? (
+                            <input
+                                type="text"
+                                onKeyUp={changeName}
+                                onBlur={e => {
+                                    currentShoppingList.name = e.currentTarget.value;
+                                    updateShoppingLists();
+                                    setIsEditingName(false);
+                                }}
+                                placeholder="Liste hinzuf&uuml;gen"
+                                defaultValue={currentShoppingList.name}
+                                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                            />
+                        ) : (
+                            <p
+                                className="text-black ml-32 text-2xl hover:cursor-pointer"
+                                onClick={() => setIsEditingName(true)}
+                            >
+                                {currentShoppingList?.name}
+                            </p>
+                        )}
                     </div>
                     <div className="flex flex-col m-2 space-y-3">
                         <div className="flex w-full">
@@ -121,15 +171,21 @@ const ShoppingList: NextPage = () => {
                                 onKeyUp={addShoppingListItem}
                             />
                         </div>
-                        <div className="flex flex-row flex-wrap gap-1">
+                        <div className="flex flex-row flex-wrap gap-1 overflow-y-hidden">
                             {/* <transition-group name="fadeOut"> */}
-                            {selectedShoppingList?.items?.map((item, index) => (
+                            {currentShoppingList?.items?.map((item, index) => (
                                 <div
-                                    className="fadeOut shadow-md w-28"
-                                    onClick={removeShoppingListItem.bind(index)}
-                                    key={item.name}
+                                    className="fadeOut shadow-md w-28 hover:cursor-pointer"
+                                    onClick={() => removeShoppingListItem(index)}
+                                    key={item._id}
                                 >
-                                    <ShoppingListItem _id={item._id} name={item.name} description={item.description} />
+                                    <ShoppingListItem
+                                        key={item._id}
+                                        _id={item._id}
+                                        name={item.name}
+                                        description={item.description}
+                                        image={item.image}
+                                    />
                                 </div>
                             ))}
                             {/* </transition-group> */}

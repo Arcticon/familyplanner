@@ -1,16 +1,16 @@
-import React, {Fragment, useEffect, useState} from 'react';
-import {Disclosure, Menu, Transition} from '@headlessui/react';
-import {BellIcon, MenuIcon, XIcon} from '@heroicons/react/outline';
+import React, { Fragment, useEffect, useState } from 'react';
+import { Disclosure, Menu, Transition } from '@headlessui/react';
+import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
-import {NextRouter, withRouter} from 'next/router';
+import { NextRouter, withRouter } from 'next/router';
 
 const navigation = [
-    {name: 'Startseite', href: '/'},
-    {name: 'Registrieren', href: '/register'},
-    {name: 'Login', href: '/login'},
-    {name: 'Einkaufsliste', href: '/shoppinglist'},
-    {name: 'Kalendar', href: '#'},
-    {name: 'Nachrichten', href: '#'}
+    { name: 'Startseite', href: '/' },
+    { name: 'Registrieren', href: '/register' },
+    { name: 'Login', href: '/login' },
+    { name: 'Einkaufsliste', href: '/shoppinglist' },
+    { name: 'Kalendar', href: '#' },
+    { name: 'Nachrichten', href: '#' }
 ];
 
 function classNames(...classes: string[]) {
@@ -45,7 +45,7 @@ const Navbar: React.FC<MyComponentProps> = props => {
     return (
         <div>
             <Disclosure as="nav" className="bg-gray-800">
-                {({open}) => (
+                {({ open }) => (
                     <>
                         <div className="px-2 sm:px-6 lg:px-5">
                             <div className="relative flex items-center justify-between">
@@ -118,7 +118,7 @@ const Navbar: React.FC<MyComponentProps> = props => {
                                         >
                                             <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                                                 <Menu.Item>
-                                                    {({active}) => (
+                                                    {({ active }) => (
                                                         <a
                                                             href="#"
                                                             className={classNames(
@@ -131,7 +131,7 @@ const Navbar: React.FC<MyComponentProps> = props => {
                                                     )}
                                                 </Menu.Item>
                                                 <Menu.Item>
-                                                    {({active}) => (
+                                                    {({ active }) => (
                                                         <a
                                                             href="#"
                                                             className={classNames(
@@ -144,7 +144,7 @@ const Navbar: React.FC<MyComponentProps> = props => {
                                                     )}
                                                 </Menu.Item>
                                                 <Menu.Item>
-                                                    {({active}) => (
+                                                    {({ active }) => (
                                                         <a
                                                             href="#"
                                                             className={classNames(
@@ -171,12 +171,12 @@ const Navbar: React.FC<MyComponentProps> = props => {
                                         as="a"
                                         href={item.href}
                                         className={classNames(
-                                            item.current
+                                            isLinkActive(item.href)
                                                 ? 'bg-gray-900 text-white'
                                                 : 'text-gray-300 hover:bg-gray-700 hover:text-white',
                                             'block px-3 py-2 rounded-md text-base font-medium'
                                         )}
-                                        aria-current={item.current ? 'page' : undefined}
+                                        aria-current={isLinkActive(item.href) ? 'page' : undefined}
                                     >
                                         {item.name}
                                     </Disclosure.Button>

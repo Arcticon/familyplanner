@@ -1,16 +1,16 @@
 import '../styles/globals.css';
-import {withTRPC} from '@trpc/next';
-import {AppRouter} from './api/trpc/[trpc]';
-import {AppType} from 'next/dist/shared/lib/utils';
+import { withTRPC } from '@trpc/next';
+import { AppRouter } from './api/trpc/[trpc]';
+import { AppType } from 'next/dist/shared/lib/utils';
 import Navbar from '../components/navbar';
 // import Footer from 'components/footer';
 
-const MyApp: AppType = ({Component, pageProps}) => {
+const MyApp: AppType = ({ Component, pageProps }) => {
     return (
-        <div className="h-screen w-screen">
+        <div>
             <Navbar />
             {/* <div className="flex-1 overflow-y-auto py-2 px-4"> */}
-                <Component {...pageProps} />
+            <Component {...pageProps} />
             {/* </div> */}
             {/* <Footer /> */}
         </div>
@@ -18,7 +18,7 @@ const MyApp: AppType = ({Component, pageProps}) => {
 };
 
 export default withTRPC<AppRouter>({
-    config({ctx}) {
+    config({ ctx }) {
         if (typeof window !== 'undefined') {
             // during client requests
             return {

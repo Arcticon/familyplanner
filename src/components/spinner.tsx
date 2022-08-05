@@ -1,4 +1,4 @@
-import {PureComponent} from 'react';
+import { PureComponent } from 'react';
 
 type SpinnerProps = {
     width: number;
@@ -13,7 +13,7 @@ class Spinner extends PureComponent<SpinnerProps> {
 
     render() {
         return (
-            <div className="flex justify-center items-center h-screen">
+            <div className="flex justify-center items-center">
                 <svg
                     className="motion-safe:animate-spin text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
                     viewBox="0 0 100 101"

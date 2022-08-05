@@ -1,10 +1,10 @@
 import Spinner from '../components/spinner';
-import type {NextPage} from 'next';
+import type { NextPage } from 'next';
 
 const Home: NextPage = () => {
     return (
         <div>
-            <p>Hello</p>
+            <p>Hello, from Vercel</p>
             <hr />
             <Spinner />
         </div>
