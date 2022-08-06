@@ -3,50 +3,46 @@ import { withTRPC } from '@trpc/next';
 import { AppRouter } from './api/trpc/[trpc]';
 import { AppType } from 'next/dist/shared/lib/utils';
 import Navbar from '../components/navbar';
+import { SessionProvider } from 'next-auth/react';
 // import Footer from 'components/footer';
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+const MyApp: AppType = ({ Component, pageProps: { session, ...pageProps } }) => {
     return (
         <div>
-            <Navbar />
+            <SessionProvider session={session}>
+                <Navbar />
+                <Component {...pageProps} />
+            </SessionProvider>
             {/* <div className="flex-1 overflow-y-auto py-2 px-4"> */}
-            <Component {...pageProps} />
             {/* </div> */}
             {/* <Footer /> */}
         </div>
     );
 };
 
+const getBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+        return '';
+    }
+    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
+
+    return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+};
+
 export default withTRPC<AppRouter>({
     config({ ctx }) {
-        if (typeof window !== 'undefined') {
-            // during client requests
-            return {
-                url: '/api/trpc'
-            };
-        }
-        // during SSR below
-
-        // optional: use SSG-caching for each rendered page (see caching section for more details)
-        const ONE_DAY_SECONDS = 60 * 60 * 24;
-        ctx?.res?.setHeader('Cache-Control', `s-maxage=1, stale-while-revalidate=${ONE_DAY_SECONDS}`);
-
         /**
          * If you want to use SSR, you need to use the server's full URL
          * @link https://trpc.io/docs/ssr
          */
-        const url = 'http://localhost:3000/api/trpc';
+        const url = `${getBaseUrl()}/api/trpc`;
 
         return {
-            url,
+            url
             /**
              * @link https://react-query.tanstack.com/reference/QueryClient
              */
             // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
-            headers: {
-                // optional - inform server that it's an ssr request
-                'x-ssr': '1'
-            }
         };
     },
     /**

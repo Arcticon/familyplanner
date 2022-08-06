@@ -2,6 +2,7 @@ import type { GetServerSidePropsContext, NextPage } from 'next';
 import { faker } from '@faker-js/faker/locale/de';
 import ShoppingListItem, { ShoppingListItemProps } from '../../components/shoppinglistitem';
 import { useState, useMemo, KeyboardEvent } from 'react';
+import { getSession } from 'next-auth/react';
 
 const MIN_ITEMS = 12;
 const MAX_ITEMS = 60;
@@ -42,14 +43,6 @@ const generateShoppingList: () => ShoppingListProps = () => {
 const generateShoppingLists: () => ShoppingListProps[] = () => {
     return Array.from({ length: Math.floor(Math.random() * MAX_LISTS + 2) }, () => generateShoppingList());
 };
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-    return {
-        props: {
-            shoppingLists: generateShoppingLists()
-        }
-    };
-}
 
 const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppingLists }) => {
     const [currentShoppingLists, setShoppingLists] = useState<ShoppingListProps[]>(shoppingLists);
@@ -214,5 +207,25 @@ const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppi
         </div>
     );
 };
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+    const session = await getSession(context);
+
+    if (!session) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
+        };
+    }
+
+    return {
+        props: {
+            session,
+            shoppingLists: generateShoppingLists()
+        }
+    };
+}
 
 export default ShoppingList;
