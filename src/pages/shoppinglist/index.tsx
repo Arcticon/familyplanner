@@ -1,20 +1,25 @@
 import type { GetServerSidePropsContext, NextPage } from 'next';
 import { faker } from '@faker-js/faker/locale/de';
-import ShoppingListItem, { ShoppingListItemProps } from '../../components/shoppinglistitem';
-import { useState, useMemo, KeyboardEvent } from 'react';
+import { Item } from '../../components/shoppinglistitem';
+import { useState, useMemo, KeyboardEvent, useCallback } from 'react';
 import { getSession } from 'next-auth/react';
+import ShoppingListSection, { Section } from '../../components/shoppinglistsection';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 const MIN_ITEMS = 12;
-const MAX_ITEMS = 60;
+const MAX_ITEMS = 10;
+const MAX_SECTIONS = 5;
 const MAX_LISTS = 5;
+let START_INDEX = 0;
 
 type ShoppingListProps = {
     _id: string;
     name: string;
-    items: ShoppingListItemProps[];
+    sections: Section[];
 };
 
-const generateRandomItem: () => ShoppingListItemProps = () => {
+const generateRandomItem: () => Item = () => {
     return {
         _id: faker.database.mongodbObjectId(),
         name: faker.commerce.product(),
@@ -23,21 +28,40 @@ const generateRandomItem: () => ShoppingListItemProps = () => {
     };
 };
 
-const generateItem = (name: string, description?: string): ShoppingListItemProps => {
+const generateItem = (name: string, description?: string): Item => {
     return {
         _id: faker.database.mongodbObjectId(),
         name,
-        description: description ?? '',
-        image: faker.image.dataUri(640, 480, faker.color.human())
+        description: description ?? ''
+    };
+};
+
+const generateSection = (index: Section['index'], name: string): Section => {
+    return {
+        _id: faker.database.mongodbObjectId(),
+        index,
+        name,
+        color: faker.color.human(),
+        items: Array.from({ length: Math.floor(Math.random() * MAX_ITEMS + MIN_ITEMS) }, () => generateRandomItem())
     };
 };
 
 const generateShoppingList: () => ShoppingListProps = () => {
     return {
         _id: faker.database.mongodbObjectId(),
-        name: faker.company.companyName(),
-        items: Array.from({ length: Math.floor(Math.random() * MAX_ITEMS + MIN_ITEMS) }, () => generateRandomItem())
+        name: faker.company.name(),
+        sections: Array.from({ length: Math.floor(Math.random() * MAX_SECTIONS) }, () =>
+            generateSection(START_INDEX++, faker.commerce.productName())
+        )
     };
+};
+
+const shoppingListLength = (sections: Section[]) => {
+    return sections
+        .map(section => section.items.length)
+        .reduce((previousValue, currentValue) => {
+            return previousValue + currentValue;
+        }, 0);
 };
 
 const generateShoppingLists: () => ShoppingListProps[] = () => {
@@ -55,7 +79,7 @@ const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppi
         );
     }, [selectedShoppingListId, currentShoppingLists]);
 
-    function updateShoppingLists() {
+    const updateShoppingLists = useCallback(() => {
         setShoppingLists(shoppingList => {
             return shoppingList.map(list => {
                 if (list._id === currentShoppingList._id) {
@@ -64,12 +88,15 @@ const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppi
                 return list;
             });
         });
-    }
+    }, [currentShoppingList]);
 
-    function removeShoppingListItem(index: number) {
-        currentShoppingList.items.splice(index, 1);
-        updateShoppingLists();
-    }
+    const removeShoppingListItem = useCallback(
+        (sectionIndex: number, itemIndex: number) => {
+            currentShoppingList.sections[sectionIndex].items.splice(itemIndex, 1);
+            updateShoppingLists();
+        },
+        [currentShoppingList.sections, updateShoppingLists]
+    );
 
     function addShoppingListItem(event: KeyboardEvent<HTMLInputElement>) {
         if (!event.code.endsWith('Enter')) {
@@ -81,8 +108,17 @@ const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppi
         }
         const [description, name] = value.split(' ');
         const newItem = generateItem(name ?? description, name ? description : '');
-        console.log(newItem);
-        currentShoppingList.items.unshift(newItem);
+        const firstSectionExists = !!currentShoppingList.sections?.[0];
+        if (!firstSectionExists) {
+            currentShoppingList.sections.push({
+                _id: faker.database.mongodbObjectId(),
+                index: 0,
+                name: faker.commerce.productName(),
+                color: faker.color.human(),
+                items: []
+            });
+        }
+        currentShoppingList.sections[0].items.unshift(newItem);
         updateShoppingLists();
         event.currentTarget.value = '';
     }
@@ -100,6 +136,39 @@ const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppi
         setIsEditingName(false);
     }
 
+    const moveItem = useCallback(
+        (
+            currentItemIndex: number,
+            targetItemIndex: number,
+            currentSectionIndex: number,
+            targetSectionIndex: number
+        ) => {
+            const item = currentShoppingList.sections[currentSectionIndex].items[currentItemIndex];
+            currentShoppingList.sections[currentSectionIndex].items.splice(currentItemIndex, 1);
+            currentShoppingList.sections[targetSectionIndex].items.splice(targetItemIndex, 0, item);
+            updateShoppingLists();
+        },
+        [currentShoppingList, updateShoppingLists]
+    );
+
+    const renderSection = useCallback(
+        (section: Section, sectionIndex: number) => {
+            if (!section) {
+                return;
+            }
+            return (
+                <ShoppingListSection
+                    key={section._id}
+                    section={section}
+                    sectionIndex={sectionIndex}
+                    click={removeShoppingListItem}
+                    move={moveItem}
+                />
+            );
+        },
+        [moveItem, removeShoppingListItem]
+    );
+
     return (
         <div className="flex overflow-x-hidden">
             <div className="flex w-1/4 mt-10 mr-7 flex-none">
@@ -116,7 +185,7 @@ const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppi
                             >
                                 <div className="flex">{shoppingList.name}</div>
                                 <div className="flex bg-red-600 w-6 h-6 justify-center rounded-sm">
-                                    {shoppingList.items?.length ?? 0}
+                                    {shoppingListLength(shoppingList.sections)}
                                 </div>
                             </div>
                         ))}
@@ -164,25 +233,12 @@ const ShoppingList: NextPage<{ shoppingLists: ShoppingListProps[] }> = ({ shoppi
                                 onKeyUp={addShoppingListItem}
                             />
                         </div>
-                        <div className="flex flex-row flex-wrap gap-1 overflow-y-hidden">
-                            {/* <transition-group name="fadeOut"> */}
-                            {currentShoppingList?.items?.map((item, index) => (
-                                <div
-                                    className="fadeOut shadow-md w-28 hover:cursor-pointer"
-                                    onClick={() => removeShoppingListItem(index)}
-                                    key={item._id}
-                                >
-                                    <ShoppingListItem
-                                        key={item._id}
-                                        _id={item._id}
-                                        name={item.name}
-                                        description={item.description}
-                                        image={item.image}
-                                    />
-                                </div>
-                            ))}
-                            {/* </transition-group> */}
-                        </div>
+                        <DndProvider backend={HTML5Backend}>
+                            {currentShoppingList.sections.map((section, sectionIndex) =>
+                                renderSection(section, sectionIndex)
+                            )}
+                        </DndProvider>
+
                         <div className="flex bg-white h-10 items-center">
                             <span className="ml-3">Zuletzt verwendet</span>
                         </div>

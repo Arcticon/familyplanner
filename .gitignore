@@ -39,3 +39,7 @@ yarn-error.log*
 
 # .env
 .env
+
+# bun
+bun.lockb
+node_modules.bun
